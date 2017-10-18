@@ -5,4 +5,4 @@ The final project for Computer Science 207
 Viktor Fries, Franknordstrom
 
 This repository contains all files and documents related to our final project for CS207
-As of yet, the exact nature of the project has not been determined.
+As of yet, the exact nature of the project has not been determined. 
