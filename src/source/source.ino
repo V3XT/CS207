@@ -20,18 +20,24 @@ int pot2 = 0;   //Stores the measurement of the second potentiometer
 
 void setup() {
   //Initialize pins for the DAC
-  for (int i = 0; i < 8; i++){
-    pinMode(i, OUTPUT);
-  }
+  DDRD = B11111111;
 
 }
 
 void loop() {
-  //Read the current values of the poteniometers
-  //This code will probably be refactored directly into
-  //Other statements to increase proccessing speed
-  pot1 = analogRead(pot1pin); 
-  pot2 = analogRead(pot2pin);
-  
+
+  //record an initial time
+  long sampleStop = micros();
+
+   //play sound
+  for (long i = 0; i < 8000; i++)
+  {
+    //Quick way to write 8 bits to pins 0 to 7
+    PORTD = (map(analogRead(pot1pin),0,1023,5,100)*i) % waveQuality;
+    
+    //wait for the right amount of time for 8000Hz
+    sampleStop += 125;
+    while(micros() < sampleStop);
+  }
 
 }
