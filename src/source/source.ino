@@ -10,34 +10,53 @@
  * 
  */
 
-const int waveQuality = 256;  //The maximum height of a generated wave
-const int pot1pin = A0;   //Input pin of the first potentiometer
-const int pot2pin = A1;   //Input pin of the second potentiometer
-const int pot2pinBool = A2; //Input for the toggle to control second potentiometer
-int pot1 = 0;   //Stores the measurement of the first potentiometer
-int pot2 = 0;   //Stores the measurement of the second potentiometer
+#define SAMPLERATE 8000.0   //The number of audio samples per second
+#define SAMPLELENGTH 125.0  //1 000 000 / SAMPLERATE
+#define WAVEQUALITY 256     //The maximum height of a generated wave
+#define HALFWAVEQUALITY 128 ///WAVEQUALITY / 2
 
+#define pot1pin A0  //Input pin of the first potentiometer
+#define pot2pin A1  //Input pin of the second potentiometer
+#define bothWaves 8 //Input for the toggle to control second potentiometer
 
+//record an initial time
+  long sampleStop = micros();
+  float waveOne = 0, waveTwo = 0;
+  char waveOut = 0;
 void setup() {
   //Initialize pins for the DAC
   DDRD = B11111111;
-
+  pinMode(bothWaves,INPUT);
+  Serial.begin(9600);
 }
 
 void loop() {
 
-  //record an initial time
-  long sampleStop = micros();
-
-   //play sound
-  for (long i = 0; i < 8000; i++)
-  {
-    //Quick way to write 8 bits to pins 0 to 7
-    PORTD = (map(analogRead(pot1pin),0,1023,5,100)*i) % waveQuality;
+  while(1){
+  
+  if(digitalRead(bothWaves)){
     
-    //wait for the right amount of time for 8000Hz
-    sampleStop += 125;
-    while(micros() < sampleStop);
+     waveOne += HALFWAVEQUALITY/(SAMPLERATE/(map(analogRead(pot1pin),0,1023,40,2086)));
+     waveTwo += HALFWAVEQUALITY/(SAMPLERATE/(map(analogRead(pot2pin),0,1023,40,2086)));
+
+     //Prevent waves from exceedind max amplitude
+     if (waveOne > HALFWAVEQUALITY) waveOne -= HALFWAVEQUALITY;
+     if (waveTwo > HALFWAVEQUALITY) waveTwo -= HALFWAVEQUALITY;
+      
+     PORTD =  waveOne + waveTwo;
+  }
+  else {
+    waveOne += WAVEQUALITY/(SAMPLERATE/(map(analogRead(pot1pin),0,1023,40,2086)));
+    if (waveOne > WAVEQUALITY) waveOne -= WAVEQUALITY;
+    PORTD = waveOne;
+
   }
 
+  //wait for the right amount of time for 8000Hz
+    sampleStop += SAMPLELENGTH;
+    while(micros() < sampleStop){}
+  }
 }
+
+
+
